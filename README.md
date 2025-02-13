@@ -1,6 +1,6 @@
 # Password Generator CLI
 
-A secure and flexible command-line password generator written in Rust. Generate strong passwords with various options and customizations.
+A secure and flexible command-line password generator written in Rust. Generate strong passwords with various options and customisations.
 
 ## Features
 
@@ -10,7 +10,7 @@ A secure and flexible command-line password generator written in Rust. Generate 
   - Alphabets only (lowercase and uppercase)
   - Numbers only
   - Alphanumeric (no special characters)
-- Password strength indicator with color coding
+- Password strength indicator with colour coding
 - Configurable password length
 - Generate multiple passwords at once
 - Automatic clipboard copying
@@ -104,7 +104,7 @@ cargo run -- -C -p numbers-only
 
 ## Password Strength
 
-The password strength is indicated with color-coded levels:
+The password strength is indicated with colour-coded levels:
 - 🔴 Very Weak
 - 🟡 Weak
 - 🔵 Moderate
