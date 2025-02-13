@@ -1,0 +1,20 @@
+[package]
+name = "password-gen"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "4.4", features = ["derive"] }
+rand = "0.8"
+colored = "2.0"
+arboard = "3.3"
+dialoguer = "0.11"
+
+[[bin]]
+name = "password-gen"
+path = "src/main.rs"
+
+# Allow passing flags directly to cargo run
+[profile.dev]
+opt-level = 0
+debug = true 
