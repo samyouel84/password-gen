@@ -1,9 +1,10 @@
-use clap::{Parser, ValueEnum};
-use rand::{Rng, thread_rng};
-use std::error::Error;
-use colored::*;
 use arboard::Clipboard;
-use dialoguer::{theme::ColorfulTheme, Select, Input, Confirm};
+use clap::{Parser, ValueEnum};
+use colored::*;
+use dialoguer::{theme::ColorfulTheme, Confirm, Input, Select};
+use rand::rngs::OsRng;
+use rand::Rng;
+use std::error::Error;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -58,7 +59,7 @@ fn check_password_strength(password: &str) -> PasswordStrength {
     let has_special = password.chars().any(|c| !c.is_ascii_alphanumeric());
 
     let mut score = 0;
-    
+
     // Length criteria
     score += match length {
         0..=4 => 0,
@@ -69,24 +70,47 @@ fn check_password_strength(password: &str) -> PasswordStrength {
     };
 
     // Character type criteria
-    if has_lowercase { score += 1; }
-    if has_uppercase { score += 1; }
-    if has_number { score += 1; }
-    if has_special { score += 2; }
+    if has_lowercase {
+        score += 1;
+    }
+    if has_uppercase {
+        score += 1;
+    }
+    if has_number {
+        score += 1;
+    }
+    if has_special {
+        score += 2;
+    }
 
     match score {
-        0..=2 => PasswordStrength { description: "Very Weak", color: "red" },
-        3..=4 => PasswordStrength { description: "Weak", color: "yellow" },
-        5..=6 => PasswordStrength { description: "Moderate", color: "blue" },
-        7..=8 => PasswordStrength { description: "Strong", color: "green" },
-        _ => PasswordStrength { description: "Very Strong", color: "bright green" },
+        0..=2 => PasswordStrength {
+            description: "Very Weak",
+            color: "red",
+        },
+        3..=4 => PasswordStrength {
+            description: "Weak",
+            color: "yellow",
+        },
+        5..=6 => PasswordStrength {
+            description: "Moderate",
+            color: "blue",
+        },
+        7..=8 => PasswordStrength {
+            description: "Strong",
+            color: "green",
+        },
+        _ => PasswordStrength {
+            description: "Very Strong",
+            color: "bright green",
+        },
     }
 }
 
 fn generate_complex_password(length: usize, password_type: PasswordType) -> String {
-    let mut rng = thread_rng();
+    let mut rng = OsRng;
     let mut password = String::with_capacity(length);
-    
+
     // Define character sets
     let lowercase = "abcdefghijklmnopqrstuvwxyz";
     let uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -96,22 +120,72 @@ fn generate_complex_password(length: usize, password_type: PasswordType) -> Stri
     // Ensure at least one character from each required set based on password type
     match password_type {
         PasswordType::Standard => {
-            password.push(lowercase.chars().nth(rng.gen_range(0..lowercase.len())).unwrap());
-            password.push(uppercase.chars().nth(rng.gen_range(0..uppercase.len())).unwrap());
-            password.push(numbers.chars().nth(rng.gen_range(0..numbers.len())).unwrap());
-            password.push(special.chars().nth(rng.gen_range(0..special.len())).unwrap());
+            password.push(
+                lowercase
+                    .chars()
+                    .nth(rng.gen_range(0..lowercase.len()))
+                    .unwrap(),
+            );
+            password.push(
+                uppercase
+                    .chars()
+                    .nth(rng.gen_range(0..uppercase.len()))
+                    .unwrap(),
+            );
+            password.push(
+                numbers
+                    .chars()
+                    .nth(rng.gen_range(0..numbers.len()))
+                    .unwrap(),
+            );
+            password.push(
+                special
+                    .chars()
+                    .nth(rng.gen_range(0..special.len()))
+                    .unwrap(),
+            );
         }
         PasswordType::AlphabetsOnly => {
-            password.push(lowercase.chars().nth(rng.gen_range(0..lowercase.len())).unwrap());
-            password.push(uppercase.chars().nth(rng.gen_range(0..uppercase.len())).unwrap());
+            password.push(
+                lowercase
+                    .chars()
+                    .nth(rng.gen_range(0..lowercase.len()))
+                    .unwrap(),
+            );
+            password.push(
+                uppercase
+                    .chars()
+                    .nth(rng.gen_range(0..uppercase.len()))
+                    .unwrap(),
+            );
         }
         PasswordType::NumbersOnly => {
-            password.push(numbers.chars().nth(rng.gen_range(0..numbers.len())).unwrap());
+            password.push(
+                numbers
+                    .chars()
+                    .nth(rng.gen_range(0..numbers.len()))
+                    .unwrap(),
+            );
         }
         PasswordType::Alphanumeric => {
-            password.push(lowercase.chars().nth(rng.gen_range(0..lowercase.len())).unwrap());
-            password.push(uppercase.chars().nth(rng.gen_range(0..uppercase.len())).unwrap());
-            password.push(numbers.chars().nth(rng.gen_range(0..numbers.len())).unwrap());
+            password.push(
+                lowercase
+                    .chars()
+                    .nth(rng.gen_range(0..lowercase.len()))
+                    .unwrap(),
+            );
+            password.push(
+                uppercase
+                    .chars()
+                    .nth(rng.gen_range(0..uppercase.len()))
+                    .unwrap(),
+            );
+            password.push(
+                numbers
+                    .chars()
+                    .nth(rng.gen_range(0..numbers.len()))
+                    .unwrap(),
+            );
         }
     }
 
@@ -147,7 +221,7 @@ fn generate_password(length: usize, password_type: PasswordType, complex: bool) 
     if complex {
         generate_complex_password(length, password_type)
     } else {
-        let mut rng = thread_rng();
+        let mut rng = OsRng;
         let mut password = String::with_capacity(length);
 
         let chars = match password_type {
@@ -170,7 +244,7 @@ fn generate_password(length: usize, password_type: PasswordType, complex: bool) 
 fn copy_to_clipboard(text: &str) -> Result<(), Box<dyn Error>> {
     let mut clipboard = Clipboard::new()?;
     clipboard.set_text(text.to_owned())?;
-    
+
     // Verify the clipboard content
     match clipboard.get_text() {
         Ok(contents) if contents == text => Ok(()),
@@ -241,7 +315,7 @@ fn interactive_mode() -> Result<(usize, PasswordType, usize, bool, bool), Box<dy
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut args = Args::parse();
-    
+
     if !args.cli_mode {
         let (length, password_type, count, complex, copy) = interactive_mode()?;
         args.length = length;
@@ -250,7 +324,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         args.complex = complex;
         args.copy = copy;
     }
-    
+
     println!("\nPassword Generation Settings:");
     println!("Type: {:?}", args.password_type);
     println!("Length: {}", args.length);
@@ -258,20 +332,20 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("Complex: {}", args.complex);
     println!("Copy to clipboard: {}", args.copy);
     println!("----------------------------------------");
-    
+
     let mut last_password = String::new();
-    
+
     for i in 0..args.count {
         let password = generate_password(args.length, args.password_type, args.complex);
         let strength = check_password_strength(&password);
-        
+
         println!("Password {}: {}", i + 1, password);
         println!("Strength: {}", strength.description.color(strength.color));
         println!("----------------------------------------");
-        
+
         last_password = password;
     }
-    
+
     if args.copy {
         match copy_to_clipboard(&last_password) {
             Ok(_) => {
@@ -284,6 +358,6 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
         }
     }
-    
+
     Ok(())
 }
